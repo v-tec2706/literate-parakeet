@@ -1,0 +1,18 @@
+plugins {
+    id 'java'
+    id 'com.zeroc.gradle.ice-builder.slice' version '1.4.7' apply false
+}
+
+group 'sr'
+version '1.0-SNAPSHOT'
+
+sourceCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+    compile 'com.zeroc:ice:3.7.2'
+}
