@@ -21,9 +21,8 @@ public class Account implements Demo.Account
     }
 
     @Override
-    public void getAccountStatus(String s, Current current) {
-        System.out.println(s);
+    public Money getAccountStatus(String s, Current current) {
+        System.out.println("Value "+balance.value+balance.currency);
+        return balance;
     }
-
-
 }

@@ -3,8 +3,14 @@ module Demo
 
     enum Currency { PLN, USD, EUR}
 
+    struct Money{
+            Currency currency;
+            int value;
+        }
+
+
     interface Account{
-        void getAccountStatus(string s);
+        idempotent Money getAccountStatus(string s);
     }
 
     interface PremiumAccount{
@@ -17,10 +23,6 @@ module Demo
         bool isPremium;
     }
 
-    struct Money{
-        Currency currency;
-        int value;
-    }
 
     interface AccountsCreator{
         CreatedAccount createAccount(string firstName, string lastName,string pesel,Money declaredIncome);

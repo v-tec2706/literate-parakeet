@@ -1,5 +1,6 @@
 package server;
 
+import Demo.Currency;
 import com.zeroc.Ice.Communicator;
 import com.zeroc.Ice.Identity;
 import com.zeroc.Ice.ObjectAdapter;
@@ -27,8 +28,8 @@ public class Server {
             adapter.add(factory, new Identity("accountfactory", "accfac"));
 
 
-//            locator.createAccount("jan", "kowalski", "somepesel", new MoneyAmount(3000,
-//                    Currency.PLN));
+  //          locator.createAccount("jan", "kowalski", "somepesel", new MoneyAmount(3000,
+  //                  Currency.PLN));
             // 4. Dodanie wpisów do tablicy ASM
 //            adapter.add(accountServant, new Identity("somepesel", "standard"));
 
