@@ -1,0 +1,32 @@
+syntax = "proto2";
+
+option java_multiple_files = true;
+option java_package = "stock";
+
+package stock;
+
+enum currency {
+	PLN = 1; 
+	EUR = 2;
+    CHF = 3; 
+    USD = 4; 
+    GBP = 5;
+}
+
+message currencyData {
+	required currency curr = 1;
+	required double value = 2;
+}
+
+message stockRequest {
+	repeated currencyData currencies = 1;
+}
+
+
+message stockResponse {
+	repeated currencyData updatedCurrencies = 1;
+}
+
+service StockExchange {
+	rpc getUpdatedCurrencies(stockRequest) returns (stockResponse ) {}
+}

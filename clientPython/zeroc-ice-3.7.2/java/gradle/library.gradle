@@ -1,0 +1,172 @@
+//
+// Copyright (c) ZeroC, Inc. All rights reserved.
+//
+
+apply plugin: 'maven'
+apply plugin: 'signing'
+
+def pomName = "${libDir}/${project.name}-${project.version}.pom"
+
+def scmData = [
+    connection : 'scm:git:git@github.com/zeroc-ice/ice.git',
+    developerConnection : 'scm:git:git@github.com/zeroc-ice/ice.git',
+    url : 'git://github.com/zeroc-ice/ice.git'
+].collectEntries { key, value -> [key, project.hasProperty(key) ? project.property(key) : value] }
+
+ext.projectPom = {
+    pom {
+        project {
+            name project.ext.displayName
+            description project.ext.description
+            url 'https://zeroc.com'
+            packaging 'jar'
+            scm {
+                connection scmData.connection
+                developerConnection scmData.developerConnection
+                url scmData.url
+            }
+            licenses {
+                license {
+                    name 'GNU General Public License, version 2'
+                    url 'https://www.gnu.org/licenses/gpl-2.0.html'
+                    distribution 'repo'
+                }
+            }
+            developers {
+                developer {
+                    name 'ZeroC Developers'
+                    email 'info@zeroc.com'
+                    organization = 'ZeroC, Inc.'
+                    organizationUrl 'https://zeroc.com'
+                }
+            }
+        }
+    }
+}
+
+task writeNewPom {
+    outputs.file file(pomName)
+
+    doLast {
+        projectPom().writeTo(pomName)
+    }
+}
+
+jar.dependsOn(writeNewPom)
+
+jar {
+    destinationDir = new File("${libDir}")
+}
+
+task jarSources(type:Jar, dependsOn: jar){
+    from sourceSets.main.allSource
+    classifier = 'sources'
+    destinationDir = new File("${libDir}")
+}
+
+assemble.dependsOn(jarSources)
+
+javadoc.dependsOn(compileSlice)
+
+javadoc {
+    // We rely on Java9+ javadoc features
+    enabled = JavaVersion.current() > JavaVersion.VERSION_1_8
+
+    failOnError = true
+    options.header = project.ext.displayName
+
+    if(GradleVersion.current() >= GradleVersion.version('4.1') && JavaVersion.current() > JavaVersion.VERSION_1_10) {
+        // TODO: --no-module-directories is an undocumented option required for the
+        // generated search to work properly. Without this option, search returns
+        // .../undefined/... URLs.
+        options.addBooleanOption('-no-module-directories', true)
+    }
+    options.addBooleanOption('html5', true)
+    classpath = project.sourceSets.main.compileClasspath
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    classifier = 'javadoc'
+    from javadoc
+    destinationDir = new File("${libDir}")
+}
+
+artifacts {
+    archives jar, jarSources, javadocJar
+}
+
+signing {
+    required {
+        gradle.taskGraph.hasTask("signArchives") ||
+        gradle.taskGraph.hasTask("uploadArchives") ||
+        ( project.hasProperty('signing.keyId') &&
+          project.hasProperty('signing.password') &&
+          project.hasProperty('signing.secretKeyRingFile') )
+    }
+    sign configurations.archives
+}
+
+ext.mavenRepo = rootProject.hasProperty('mavenRepo')?project.mavenRepo:System.getenv('MAVEN_REPO')?:''
+ext.mavenSnapshotRepo = rootProject.hasProperty('mavenSnapshotRepo')?project.mavenSnapshotRepo:System.getenv('MAVEN_SNAPSHOT_REPO')?:''
+ext.mavenUser = rootProject.hasProperty('mavenUser')?project.mavenUser:System.getenv('MAVEN_USER')?:''
+ext.mavenPassword = rootProject.hasProperty('mavenPassword')?project.mavenPassword:System.getenv('MAVEN_PASSWORD')?:''
+
+uploadArchives {
+    repositories {
+        mavenDeployer {
+            beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+
+            // url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
+            repository(url: mavenRepo) {
+                authentication(userName: mavenUser, password: mavenPassword)
+            }
+
+            // url: "https://oss.sonatype.org/content/repositories/snapshots/"
+            snapshotRepository(url: mavenSnapshotRepo) {
+                authentication(userName: mavenUser, password: mavenPassword)
+            }
+
+            pom = projectPom()
+        }
+    }
+}
+
+jar {
+    manifest {
+        attributes("Class-Path": configurations.runtimeClasspath.resolve().collect{ "${it.name}" }.join(' '))
+    }
+}
+
+if(project.name == "icebox") {
+    jar {
+        manifest {
+            attributes("Main-Class": "com.zeroc.IceBox.Server")
+        }
+    }
+}
+
+if(project.name == "icebox-compat") {
+    jar {
+        manifest {
+            attributes("Main-Class": "IceBox.Server")
+        }
+    }
+}
+
+clean {
+    delete("${libDir}/${jar.archiveName}")
+    delete("${libDir}/${project.name}-${project.version}-javadoc.jar")
+    delete("${libDir}/${project.name}-${project.version}-sources.jar")
+    delete(pomName)
+}
+
+//
+// Check if we need to update the JARs class-path
+//
+
+task install(type: Copy, dependsOn: jarSources, overwrite: true) {
+    from "${pomName}"
+    from "${libDir}/${jar.archiveName}"
+    from "${libDir}/${project.name}-${project.version}-sources.jar"
+    into "${DESTDIR}${jarDir}"
+}

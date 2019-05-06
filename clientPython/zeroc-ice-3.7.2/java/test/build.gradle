@@ -1,0 +1,51 @@
+//
+// Copyright (c) ZeroC, Inc. All rights reserved.
+//
+
+ext.testDir = "${projectDir}/src/main/java/test"
+apply from: "slice.gradle"
+
+// Don't generate javadoc
+javadoc.enabled = false
+
+sourceSets {
+    main {
+        java {
+            exclude 'plugins'
+        }
+    }
+}
+
+dependencies {
+    implementation localDependency('ice')
+    implementation localDependency('icessl')
+    runtimeOnly localDependency('icediscovery')
+    runtimeOnly localDependency('icelocatordiscovery')
+    implementation localDependency('icebox')
+    implementation localDependency('glacier2')
+    implementation localDependency('icestorm')
+    implementation localDependency('icegrid')
+    implementation project(':testPlugins')
+}
+
+if(!gradle.startParameter.isOffline()) {
+    dependencies {
+        runtimeOnly "org.apache.commons:commons-compress:1.14"
+    }
+}
+
+jar {
+    archiveName = "test.jar"
+    destinationDir = new File("$rootProject.projectDir/lib/")
+    manifest {
+        attributes("Class-Path": configurations.runtimeClasspath.resolve().collect { it.toURI() }.join(' '))
+    }
+}
+
+clean {
+    delete("$rootProject.projectDir/lib/test.jar")
+    ['src/main/java/test/IceGrid/simple/db'].each {
+        delete fileTree(dir: it)
+    }
+    delete("src/main/java/test/Slice/generation/classes")
+}

@@ -1,0 +1,18 @@
+//
+// Copyright (c) ZeroC, Inc. All rights reserved.
+//
+
+project.ext.displayName = "IceSSL"
+project.ext.description = "The IceSSL plug-in"
+
+slice {
+    java {
+        files = fileTree(dir: "$project.ext.topSrcDir/slice", includes:['IceSSL/*.ice'])
+    }
+}
+
+dependencies {
+    implementation project(':ice')
+}
+
+apply from: "$project.ext.topSrcDir/java/gradle/library.gradle"

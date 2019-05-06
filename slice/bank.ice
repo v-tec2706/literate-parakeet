@@ -26,6 +26,7 @@ module Demo
 
     interface AccountsCreator{
         CreatedAccount createAccount(string firstName, string lastName,string pesel,Money declaredIncome);
+	CreatedAccount getAccount(string pesel);
     }
 }
 

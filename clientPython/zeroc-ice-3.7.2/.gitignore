@@ -1,0 +1,113 @@
+# Ignore objects and archives.
+*.aps
+*.[oa]
+*.obj
+*.dll
+*.ilk
+*.so
+*.so.*
+*.sl
+*.dylib
+*.pyc
+*.class
+*.exe
+*.mdb
+*.pdb
+*.tds
+*.bak
+*.ncb
+# .sdf is the Visual Studio 2010 equivalent to .ncb
+*.sdf
+# .VC.db is is the new IntelliSense database, it replaces the old .sdf
+*.VC.db
+# Visual Studio Hosting process configuration files
+*.vshost.exe.*
+*.opt
+*.user
+*.res
+*.exp
+.gdb_history
+.DS_Store
+*#
+.#*
+*~
+*.lib
+*.idb
+*.suo
+*.xap
+core.*
+tmp_*.xml
+obj
+*.RES
+ClientBin
+vcproj
+.metadata
+# VIM swap file
+*.swp
+.keychain
+
+# Eclipse
+.externalToolBuilders
+
+# macOS Keychain
+*.keychain
+.fl????????
+passwords
+
+# Makefile Build System
+build
+generated
+.depend
+
+# MSBuild Build System
+Cpp11-Debug/
+Cpp11-Release/
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+bld/
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+
+# Visual Studio
+*.opendb
+
+# Visual Studio 2015 cache/options directory
+.vs/
+
+# Backup & report files from converting an old project file
+# to a newer Visual Studio version. Backup files are not needed,
+# because we have git ;-)
+_UpgradeReport_Files/
+Backup*/
+UpgradeLog*.XML
+UpgradeLog*.htm
+
+# IceBuilder dependency files
+SliceCompile.d
+
+xcuserdata
+xcshareddata
+/sdk
+
+# SliceCompile build log
+SliceCompile.command.*.log
+# Nuget packages
+**/msbuild/packages/*
+**/msbuild/zeroc.ice.*
+*.nupkg
+
+**/netstandard2.0/netstandard2.0/*
+
+AppPackages
+BundleArtifacts
+csharp/AppX
+*.deps.json
+*.runtimeconfig.dev.json
+*.runtimeconfig.json
+cpp/AppX
+cpp/test/Slice/errorDetection/tmp

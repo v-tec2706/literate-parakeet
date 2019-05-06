@@ -1,0 +1,28 @@
+//
+// Copyright (c) ZeroC, Inc. All rights reserved.
+//
+
+project.ext.displayName = "IceStorm"
+project.ext.description = "Publish-subscribe event distribution service"
+
+sourceSets {
+    main {
+        java {
+            // ice.jar already includes a marker for the IceMX package.
+            exclude '**/com/zeroc/IceMX/_Marker.java'
+        }
+    }
+}
+
+slice {
+    java {
+        args = "--checksum com.zeroc.IceStorm.SliceChecksums"
+        files = fileTree(dir: "$project.ext.topSrcDir/slice/IceStorm", includes:['*.ice'], excludes:["*F.ice"])
+    }
+}
+
+dependencies {
+    implementation project(':ice')
+}
+
+apply from: "$project.ext.topSrcDir/java/gradle/library.gradle"

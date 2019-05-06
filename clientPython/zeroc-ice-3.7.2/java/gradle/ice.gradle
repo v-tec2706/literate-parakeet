@@ -1,0 +1,137 @@
+//
+// Copyright (c) ZeroC, Inc. All rights reserved.
+//
+
+buildscript {
+    //
+    // If iceBuilderHome is set add its lib directory it to the local maven repositories
+    // so we can build using a local plugin version
+    //
+    if (iceBuilderHome) {
+        def builder  = new File([iceBuilderHome, "build", "libs"].join(File.separator))
+        if(builder.exists()) {
+            repositories {
+                flatDir dirs: "file://${builder.getCanonicalPath()}"
+            }
+        }
+    }
+
+    if(new File("/usr/share/maven-repo").exists()){
+        repositories {
+            maven {
+                url "file:///usr/share/maven-repo"
+            }
+        }
+    }
+
+    repositories {
+        mavenCentral()
+
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
+    }
+    dependencies {
+        classpath group: "${iceBuilderClassPath}", name: 'slice', version: "${iceBuilderVersion}"
+    }
+}
+
+//
+// We do not use the new gradle Plugin DSL because on debian we want to use the plug-in
+// from gradle-ice-builder-plugin package and this is not possible when using gradle 3.2
+// included in stretch and the Plugin DSL.
+//
+project.apply(plugin: com.zeroc.gradle.icebuilder.slice.SlicePlugin)
+
+slice {
+    cppConfiguration = project.cppConfiguration
+    cppPlatform = project.cppPlatform
+    if(!System.env.ICE_BIN_DIST?.split(" ").find{ it == 'all' || it.contains('java')}) {
+        iceHome =  project.hasProperty('iceHome') ? project.iceHome
+            : System.getenv("ICE_HOME") != null ? System.env.ICE_HOME : new File(project.ext.topSrcDir).getCanonicalPath()
+    }
+}
+
+// Android does not have a compileJava task
+if(!(project.hasProperty('android') && project.android.sourceSets)) {
+    compileJava {
+        // target Java 8 using the --release option introduced in Java 9
+        if(JavaVersion.current() > JavaVersion.VERSION_1_8) {
+            options.compilerArgs.addAll(['--release', "${targetJavaRelease}"])
+        }
+        options.debug = debug
+    }
+}
+
+// The corresponding -source and -target javac options are suppressed by gradle when
+// --release is set through options.compileArgs (see above).
+sourceCompatibility = "1.${targetJavaRelease}"
+targetCompatibility = "1.${targetJavaRelease}"
+
+// Determine the name of the Slice-to-Java translator
+def isWindows = System.properties['os.name'].toLowerCase().contains('windows')
+
+// If the prefix isn't set use these default locations.
+if(!prefix) {
+    def prefixVersion = iceVersion
+    if(prefixVersion.indexOf(".0-alpha")){
+        prefixVersion = prefixVersion.replace(".0-alpha", "a")
+    } else if(prefixVersion.indexOf(".0-beta")){
+        prefixVersion = prefixVersion.replace(".0-beta", "b")
+    }
+    if(isWindows) {
+        prefix = "C:\\Ice-${prefixVersion}"
+    } else {
+        prefix = "/opt/Ice-${prefixVersion}"
+    }
+}
+
+// Installation location for jar/pom & executables.
+//
+// Note that we exclude /usr/src/packages because it's the RPM build directory on SLES.
+//
+if((prefix.startsWith("/usr") || prefix.startsWith("/usr/local")) && !prefix.startsWith("/usr/src/packages")) {
+    ext.jarDir = prefix + "/share/java"
+    ext.binDir = prefix + "/bin"
+} else {
+    ext.jarDir = prefix + "/lib"
+    ext.binDir = prefix + "/bin"
+}
+
+// Check is DESTDIR is set (non-Windows)
+if(isWindows) {
+    ext.DESTDIR = ""
+}
+
+ext.libDir = "$rootProject.projectDir/lib"
+
+ext.searchFile = { List<Closure> places, List<String> searchPaths ->
+    def dirs = []
+    places.each {
+        def dir = it
+        if(dir != null) {
+            dirs << dir + "/"
+        }
+    }
+
+    def candidates = searchPaths.collect {
+        def path = it
+        dirs.collect {
+            it.concat(path)
+        }
+    }.flatten()
+
+    return candidates.find {
+        new File(it).exists()
+    }
+}
+
+// Used for the tests
+//
+ext.localDependency = { artifactId ->
+    if(project.slice.srcDist || System.env.ICE_BIN_DIST == "cpp") {
+        return project(":${artifactId}")
+    } else {
+        return "com.zeroc:${artifactId}:${project.version}"
+    }
+}

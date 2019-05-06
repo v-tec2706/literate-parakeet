@@ -1,0 +1,27 @@
+//
+// Copyright (c) ZeroC, Inc. All rights reserved.
+//
+
+// Don't generate javadoc
+javadoc.enabled = false
+
+sourceSets {
+    main {
+        java {
+            srcDirs "$rootProject.projectDir/test/plugins"
+        }
+    }
+}
+
+dependencies {
+    implementation localDependency('ice')
+}
+
+jar {
+    archiveName = "IceTestPlugins.jar"
+    destinationDir = new File("$rootProject.projectDir/lib/")
+}
+
+clean {
+    delete("$rootProject.projectDir/lib/IceTestPlugins.jar")
+}

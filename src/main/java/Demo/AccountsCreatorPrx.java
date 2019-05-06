@@ -63,6 +63,46 @@ public interface AccountsCreatorPrx extends com.zeroc.Ice.ObjectPrx
         return f;
     }
 
+    default CreatedAccount getAccount(String pesel)
+    {
+        return getAccount(pesel, com.zeroc.Ice.ObjectPrx.noExplicitContext);
+    }
+
+    default CreatedAccount getAccount(String pesel, java.util.Map<String, String> context)
+    {
+        return _iceI_getAccountAsync(pesel, context, true).waitForResponse();
+    }
+
+    default java.util.concurrent.CompletableFuture<CreatedAccount> getAccountAsync(String pesel)
+    {
+        return _iceI_getAccountAsync(pesel, com.zeroc.Ice.ObjectPrx.noExplicitContext, false);
+    }
+
+    default java.util.concurrent.CompletableFuture<CreatedAccount> getAccountAsync(String pesel, java.util.Map<String, String> context)
+    {
+        return _iceI_getAccountAsync(pesel, context, false);
+    }
+
+    /**
+     * @hidden
+     * @param iceP_pesel -
+     * @param context -
+     * @param sync -
+     * @return -
+     **/
+    default com.zeroc.IceInternal.OutgoingAsync<CreatedAccount> _iceI_getAccountAsync(String iceP_pesel, java.util.Map<String, String> context, boolean sync)
+    {
+        com.zeroc.IceInternal.OutgoingAsync<CreatedAccount> f = new com.zeroc.IceInternal.OutgoingAsync<>(this, "getAccount", null, sync, null);
+        f.invoke(true, context, null, ostr -> {
+                     ostr.writeString(iceP_pesel);
+                 }, istr -> {
+                     CreatedAccount ret;
+                     ret = CreatedAccount.ice_read(istr);
+                     return ret;
+                 });
+        return f;
+    }
+
     /**
      * Contacts the remote server to verify that the object implements this type.
      * Raises a local exception if a communication error occurs.

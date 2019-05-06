@@ -1,0 +1,20 @@
+//
+// Copyright (c) ZeroC, Inc. All rights reserved.
+//
+
+project.ext.displayName = "IceGrid"
+project.ext.description = "Locate, deploy, and manage Ice servers"
+
+slice {
+    java {
+        args = "--checksum com.zeroc.IceGrid.SliceChecksums"
+        files = fileTree(dir: "$project.ext.topSrcDir/slice/IceGrid", includes:['*.ice'], excludes:["*F.ice"])
+    }
+}
+
+dependencies {
+    implementation project(':ice')
+    implementation project(':glacier2')
+}
+
+apply from: "$project.ext.topSrcDir/java/gradle/library.gradle"

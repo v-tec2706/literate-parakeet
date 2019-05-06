@@ -1,0 +1,7 @@
+# install stuff connected with gRPC and protocol buffers
+pip install grpcio
+pip install grpcio-tools
+
+# to generate code
+
+python3 -m  grpc_tools.protoc --python_out=generated-python/ --grpc_python_out=generated-python/ --proto_path=. stock.proto

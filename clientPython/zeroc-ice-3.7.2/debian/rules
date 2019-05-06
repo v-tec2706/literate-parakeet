@@ -1,0 +1,188 @@
+#!/usr/bin/make -f
+# -*- makefile -*-
+
+# Uncomment this to turn on verbose mode.
+# export DH_VERBOSE=1
+
+export LC_ALL=en_US.UTF-8
+
+# This has to be exported to make some magic below work.
+export DH_OPTIONS
+
+# enable dpkg build flags
+# disable full hardening for now
+# export DEB_BUILD_MAINT_OPTIONS = hardening=+all
+DPKG_EXPORT_BUILDFLAGS = 1
+include /usr/share/dpkg/default.mk
+
+export JAVA_HOME=/usr/lib/jvm/default-java/
+
+#
+# Use the system gradle unless it has been overridden by GRADLE
+# environment variable.
+#
+ifeq ($(GRADLE),)
+export GRADLE		= gradle
+endif
+
+export GRADLEARGS	= --gradle-user-home $(CURDIR)/.gradle \
+			  --info \
+			  --console plain \
+			  --offline \
+			  --stacktrace \
+			  --no-daemon \
+			  --refresh-dependencies \
+			  -PicegridguiProguard=false \
+			  -PjgoodiesLooksVersion=debian \
+			  -PjgoodiesFormsVersion=debian \
+			  -PiceBuilderVersion=debian \
+			  -PiceBuilderClassPath=com.zeroc.gradle.ice-builder \
+			  -PjarsClassPath=true
+
+#
+# These files are not installed with any debian package.
+#
+INSTALL_EXCLUDE		= usr/bin/slice2confluence
+
+PHP_VERSIONS 		:= $(shell /usr/sbin/phpquery -V)
+
+PYTHON_VERSIONS 	:= 2 3
+export PYTHON2DIR 	:= $(shell python2 -c "import sys;print('python{0}.{1}'.format(sys.version_info.major, sys.version_info.minor))")
+export PYTHON3DIR 	:= $(shell python3 -c "import sys;print('python{0}.{1}'.format(sys.version_info.major, sys.version_info.minor))")
+
+export VERSION   := $(shell echo $(DEB_VERSION_UPSTREAM) | sed -e 's,^\([.0-9|.a-z]*\).*,\1,')
+
+DESTDIR=$(CURDIR)/debian/tmp
+ifeq (,$(findstring noopt,$(DEB_BUILD_OPTIONS)))
+	OPTIMIZE=yes
+else
+	OPTIMIZE=no
+endif
+
+ifneq (,$(filter parallel=%,$(DEB_BUILD_OPTIONS)))
+	MAKEFLAGS += -j$(patsubst parallel=%,%,$(filter parallel=%,$(DEB_BUILD_OPTIONS)))
+else
+	PROCESSORS := $(shell cat /proc/cpuinfo | grep processor | wc -l)
+	ifneq ($(PROCESSORS),0)
+	    MAKEFLAGS += -j$(PROCESSORS)
+	endif
+endif
+
+DHARGS	= --parallel --with maven_repo_helper --with systemd --with php --with python3 --with python2 --with javahelper
+
+MAKEOPTS = V=1 prefix=/usr DESTDIR=$(DESTDIR)
+
+%:
+	dh $@ $(DHARGS)
+
+override_dh_auto_build-arch:
+	$(MAKE) $(MAKEOPTS) OPTIMIZE=$(OPTIMIZE) LANGUAGES=cpp CONFIGS="shared cpp11-shared static cpp11-static" srcs
+ifeq (,$(filter nocheck,$(DEB_BUILD_OPTIONS)))
+	$(MAKE) $(MAKEOPTS) OPTIMIZE=no LANGUAGES=cpp CONFIGS="shared cpp11-shared" tests
+endif
+	for v in $(PHP_VERSIONS); do \
+	  cp -a php php-$${v}; \
+	  PHP_CONFIG=php-config$${v} $(MAKE) $(MAKEOPTS) OPTIMIZE=$(OPTIMIZE) -C php-$${v}; \
+	done
+	for v in $(PYTHON_VERSIONS); do \
+	  cp -a python python-$${v}; \
+	  $(MAKE) $(MAKEOPTS) OPTIMIZE=$(OPTIMIZE) PYTHON=python$${v} -C python-$${v}; \
+	done
+
+override_dh_auto_build-indep:
+	$(MAKE) $(MAKEOPTS) OPTIMIZE=$(OPTIMIZE) -C cpp slice2java
+	$(MAKE) $(MAKEOPTS) OPTIMIZE=$(OPTIMIZE) LANGUAGES="java java-compat" srcs
+ifeq (,$(filter nocheck,$(DEB_BUILD_OPTIONS)))
+	$(MAKE) $(MAKEOPTS) LANGUAGES="java java-compat" tests
+endif
+
+override_dh_auto_install-arch:
+	$(MAKE) $(MAKEOPTS) OPTIMIZE=$(OPTIMIZE) LANGUAGES=cpp CONFIGS="shared cpp11-shared static cpp11-static" install
+	for v in $(PHP_VERSIONS); do \
+	  PHP_CONFIG=php-config$${v} $(MAKE) $(MAKEOPTS) OPTIMIZE=$(OPTIMIZE) -C php-$${v} install; \
+	done
+	for v in $(PYTHON_VERSIONS); do \
+	  $(MAKE) $(MAKEOPTS) OPTIMIZE=$(OPTIMIZE) PYTHON=python$${v} -C python-$${v} install; \
+	done
+	rm -rf $(addprefix $(DESTDIR)/,$(INSTALL_EXCLUDE))
+
+override_dh_auto_install-indep:
+	$(MAKE) $(MAKEOPTS) OPTIMIZE=$(OPTIMIZE) LANGUAGES="java java-compat" install
+	rm -rf $(DESTDIR)/usr/share/java/*-sources.jar
+
+override_dh_auto_clean-arch:
+	$(MAKE) $(MAKEOPTS) OPTIMIZE=$(OPTIMIZE) LANGUAGES=cpp CONFIGS="shared cpp11-shared static cpp11-static" distclean
+	for v in $(PHP_VERSIONS); do \
+	  rm -rf php-$${v}; \
+	done
+	for v in $(PYTHON_VERSIONS); do \
+	  rm -rf python-$${v}; \
+	done
+
+override_dh_auto_clean-indep:
+	$(MAKE) $(MAKEOPTS) OPTIMIZE=$(OPTIMIZE) LANGUAGES=cpp distclean
+#
+# Don't fail if gradle isn't present
+#
+ifeq ($(shell type $(GRADLE) > /dev/null 2>&1 && echo 0),0)
+	$(MAKE) $(MAKEOPTS) OPTIMIZE=$(OPTIMIZE) LANGUAGES="java java-compat" clean
+endif
+	rm -rf java/.gradle
+	rm -rf java-compat/.gradle
+	rm -rf $(CURDIR)/.gradle
+
+override_dh_auto_test-arch:
+ifeq (,$(filter nocheck,$(DEB_BUILD_OPTIONS)))
+	-python cpp/allTests.py --rfilter=IceUtil/stacktrace --rfilter IceGrid/simple --rfilter IceDiscovery
+	-python cpp/allTests.py --config=cpp11-shared --rfilter=IceUtil/stacktrace --rfilter IceGrid/simple --rfilter IceDiscovery
+endif
+
+override_dh_auto_test-indep:
+ifeq (,$(filter nocheck,$(DEB_BUILD_OPTIONS)))
+	-python java/allTests.py --rfilter Glacier2 --rfilter IceGrid --rfilter IceDiscovery
+	-python java-compat/allTests.py --rfilter Glacier2 --rfilter IceGrid --rfilter IceDiscovery
+endif
+
+override_dh_clean:
+	find . -iname "*.pyc" -exec rm -rf {} \;
+	dh_clean
+
+override_dh_systemd_start:
+	dh_systemd_start --no-start
+
+override_dh_systemd_enable:
+	dh_systemd_enable --name icegridregistry --no-enable
+	dh_systemd_enable --name icegridnode --no-enable
+	dh_systemd_enable --name glacier2router --no-enable
+
+override_dh_install:
+	install -d -m 0755 $(DESTDIR)/usr/bin
+	install -m 0755 debian/zeroc-icegridgui.icegridgui $(DESTDIR)/usr/bin/icegridgui
+	install -d -m 0755 $(DESTDIR)/usr/share/man/man1
+	install -m 0644 debian/zeroc-icegridgui.icegridgui.1 $(DESTDIR)/usr/share/man/man1/icegridgui.1
+	install -d -m 0755 $(DESTDIR)/etc/
+
+	install -m 0644 debian/zeroc-glacier2.glacier2router.conf $(DESTDIR)/etc/glacier2router.conf
+	install -m 0644 debian/zeroc-icegrid.icegridnode.conf $(DESTDIR)/etc/icegridnode.conf
+	install -m 0644 debian/zeroc-icegrid.icegridregistry.conf $(DESTDIR)/etc/icegridregistry.conf
+
+	dh_install --list-missing -X.pom -XICE_LICENSE -XLICENSE
+	jh_depends -pzeroc-icegridgui
+
+override_dh_strip:
+	dh_strip
+	# Sadly, perl "-B" test (used by dh_strip) for binary files sometime misses some binary files,
+	# the following ensures, static libraries are always stripped even if the binay check fails.
+	strip --strip-debug --remove-section=.comment --remove-section=.note --enable-deterministic-archives \
+		debian/libzeroc-ice-dev/usr/lib/*/lib*.a
+
+override_dh_installdocs:
+	dh_installdocs -A debian/README
+
+override_mh_install-arch:
+
+override_mh_install-indep:
+	mh_install
+
+get-orig-source:
+	uscan --download-current-version --rename --force-download

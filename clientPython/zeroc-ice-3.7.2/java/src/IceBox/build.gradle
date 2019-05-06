@@ -1,0 +1,23 @@
+//
+// Copyright (c) ZeroC, Inc. All rights reserved.
+//
+
+project.ext.displayName = "IceBox"
+project.ext.description = "IceBox is an easy-to-use framework for Ice application services"
+
+slice {
+    java {
+        args = "--checksum com.zeroc.IceBox.SliceChecksums"
+        files = fileTree(dir: "$project.ext.topSrcDir/slice/IceBox", includes:['*.ice'], excludes:["*F.ice"])
+    }
+}
+
+dependencies {
+    implementation project(':ice')
+}
+
+apply from: "$project.ext.topSrcDir/java/gradle/library.gradle"
+
+javadoc {
+    excludes = ["**/Admin.java", "**/Server.java", "**/ServiceManagerI.java"]
+}
