@@ -17,41 +17,75 @@ package Demo;
 
 public interface AccountPrx extends com.zeroc.Ice.ObjectPrx
 {
-    default Money getAccountStatus(String s)
+    default Money getAccountStatus()
     {
-        return getAccountStatus(s, com.zeroc.Ice.ObjectPrx.noExplicitContext);
+        return getAccountStatus(com.zeroc.Ice.ObjectPrx.noExplicitContext);
     }
 
-    default Money getAccountStatus(String s, java.util.Map<String, String> context)
+    default Money getAccountStatus(java.util.Map<String, String> context)
     {
-        return _iceI_getAccountStatusAsync(s, context, true).waitForResponse();
+        return _iceI_getAccountStatusAsync(context, true).waitForResponse();
     }
 
-    default java.util.concurrent.CompletableFuture<Money> getAccountStatusAsync(String s)
+    default java.util.concurrent.CompletableFuture<Money> getAccountStatusAsync()
     {
-        return _iceI_getAccountStatusAsync(s, com.zeroc.Ice.ObjectPrx.noExplicitContext, false);
+        return _iceI_getAccountStatusAsync(com.zeroc.Ice.ObjectPrx.noExplicitContext, false);
     }
 
-    default java.util.concurrent.CompletableFuture<Money> getAccountStatusAsync(String s, java.util.Map<String, String> context)
+    default java.util.concurrent.CompletableFuture<Money> getAccountStatusAsync(java.util.Map<String, String> context)
     {
-        return _iceI_getAccountStatusAsync(s, context, false);
+        return _iceI_getAccountStatusAsync(context, false);
     }
 
     /**
      * @hidden
-     * @param iceP_s -
      * @param context -
      * @param sync -
      * @return -
      **/
-    default com.zeroc.IceInternal.OutgoingAsync<Money> _iceI_getAccountStatusAsync(String iceP_s, java.util.Map<String, String> context, boolean sync)
+    default com.zeroc.IceInternal.OutgoingAsync<Money> _iceI_getAccountStatusAsync(java.util.Map<String, String> context, boolean sync)
     {
         com.zeroc.IceInternal.OutgoingAsync<Money> f = new com.zeroc.IceInternal.OutgoingAsync<>(this, "getAccountStatus", com.zeroc.Ice.OperationMode.Idempotent, sync, null);
-        f.invoke(true, context, null, ostr -> {
-                     ostr.writeString(iceP_s);
-                 }, istr -> {
+        f.invoke(true, context, null, null, istr -> {
                      Money ret;
                      ret = Money.ice_read(istr);
+                     return ret;
+                 });
+        return f;
+    }
+
+    default boolean isPremium()
+    {
+        return isPremium(com.zeroc.Ice.ObjectPrx.noExplicitContext);
+    }
+
+    default boolean isPremium(java.util.Map<String, String> context)
+    {
+        return _iceI_isPremiumAsync(context, true).waitForResponse();
+    }
+
+    default java.util.concurrent.CompletableFuture<java.lang.Boolean> isPremiumAsync()
+    {
+        return _iceI_isPremiumAsync(com.zeroc.Ice.ObjectPrx.noExplicitContext, false);
+    }
+
+    default java.util.concurrent.CompletableFuture<java.lang.Boolean> isPremiumAsync(java.util.Map<String, String> context)
+    {
+        return _iceI_isPremiumAsync(context, false);
+    }
+
+    /**
+     * @hidden
+     * @param context -
+     * @param sync -
+     * @return -
+     **/
+    default com.zeroc.IceInternal.OutgoingAsync<java.lang.Boolean> _iceI_isPremiumAsync(java.util.Map<String, String> context, boolean sync)
+    {
+        com.zeroc.IceInternal.OutgoingAsync<java.lang.Boolean> f = new com.zeroc.IceInternal.OutgoingAsync<>(this, "isPremium", null, sync, null);
+        f.invoke(true, context, null, null, istr -> {
+                     boolean ret;
+                     ret = istr.readBool();
                      return ret;
                  });
         return f;

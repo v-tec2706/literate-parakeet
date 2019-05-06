@@ -15,9 +15,8 @@ from stock_pb2_grpc import StockExchangeServicer
 from stock_pb2_grpc import add_StockExchangeServicer_to_server
 
 
-TWO_HOURS_IN_SEC = 60 * 60 * 2
-allCurrencies = {currency.Name(1): 1.0, currency.Name(2): 4.27, currency.Name(3): 3.74,
-                               currency.Name(4): 3.81,  currency.Name(5): 4.98 }
+LONGTIME = 60 * 60 * 60
+allCurrencies = {currency.Name(1): 1.0, currency.Name(2): 4.27, currency.Name(3): 3.74}
 
 MIN_BOUND = 3.0
 MAX_BOUND = 6.0
@@ -67,7 +66,7 @@ def serve():
     server.start()
     try:
         while True:
-            time.sleep(TWO_HOURS_IN_SEC)
+            time.sleep(LONGTIME)
     except KeyboardInterrupt:
         server.stop(0)
 

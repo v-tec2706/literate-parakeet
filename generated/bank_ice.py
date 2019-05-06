@@ -142,17 +142,29 @@ if 'AccountPrx' not in _M_Demo.__dict__:
     _M_Demo.AccountPrx = Ice.createTempClass()
     class AccountPrx(Ice.ObjectPrx):
 
-        def getAccountStatus(self, s, context=None):
-            return _M_Demo.Account._op_getAccountStatus.invoke(self, ((s, ), context))
+        def getAccountStatus(self, context=None):
+            return _M_Demo.Account._op_getAccountStatus.invoke(self, ((), context))
 
-        def getAccountStatusAsync(self, s, context=None):
-            return _M_Demo.Account._op_getAccountStatus.invokeAsync(self, ((s, ), context))
+        def getAccountStatusAsync(self, context=None):
+            return _M_Demo.Account._op_getAccountStatus.invokeAsync(self, ((), context))
 
-        def begin_getAccountStatus(self, s, _response=None, _ex=None, _sent=None, context=None):
-            return _M_Demo.Account._op_getAccountStatus.begin(self, ((s, ), _response, _ex, _sent, context))
+        def begin_getAccountStatus(self, _response=None, _ex=None, _sent=None, context=None):
+            return _M_Demo.Account._op_getAccountStatus.begin(self, ((), _response, _ex, _sent, context))
 
         def end_getAccountStatus(self, _r):
             return _M_Demo.Account._op_getAccountStatus.end(self, _r)
+
+        def isPremium(self, context=None):
+            return _M_Demo.Account._op_isPremium.invoke(self, ((), context))
+
+        def isPremiumAsync(self, context=None):
+            return _M_Demo.Account._op_isPremium.invokeAsync(self, ((), context))
+
+        def begin_isPremium(self, _response=None, _ex=None, _sent=None, context=None):
+            return _M_Demo.Account._op_isPremium.begin(self, ((), _response, _ex, _sent, context))
+
+        def end_isPremium(self, _r):
+            return _M_Demo.Account._op_isPremium.end(self, _r)
 
         @staticmethod
         def checkedCast(proxy, facetOrContext=None, context=None):
@@ -183,8 +195,11 @@ if 'AccountPrx' not in _M_Demo.__dict__:
         def ice_staticId():
             return '::Demo::Account'
 
-        def getAccountStatus(self, s, current=None):
+        def getAccountStatus(self, current=None):
             raise NotImplementedError("servant method 'getAccountStatus' not implemented")
+
+        def isPremium(self, current=None):
+            raise NotImplementedError("servant method 'isPremium' not implemented")
 
         def __str__(self):
             return IcePy.stringify(self, _M_Demo._t_AccountDisp)
@@ -194,7 +209,8 @@ if 'AccountPrx' not in _M_Demo.__dict__:
     _M_Demo._t_AccountDisp = IcePy.defineClass('::Demo::Account', Account, (), None, ())
     Account._ice_type = _M_Demo._t_AccountDisp
 
-    Account._op_getAccountStatus = IcePy.Operation('getAccountStatus', Ice.OperationMode.Idempotent, Ice.OperationMode.Idempotent, False, None, (), (((), IcePy._t_string, False, 0),), (), ((), _M_Demo._t_Money, False, 0), ())
+    Account._op_getAccountStatus = IcePy.Operation('getAccountStatus', Ice.OperationMode.Idempotent, Ice.OperationMode.Idempotent, False, None, (), (), (), ((), _M_Demo._t_Money, False, 0), ())
+    Account._op_isPremium = IcePy.Operation('isPremium', Ice.OperationMode.Normal, Ice.OperationMode.Normal, False, None, (), (), (), ((), IcePy._t_bool, False, 0), ())
 
     _M_Demo.Account = Account
     del Account
@@ -203,7 +219,7 @@ _M_Demo._t_PremiumAccount = IcePy.defineValue('::Demo::PremiumAccount', Ice.Valu
 
 if 'PremiumAccountPrx' not in _M_Demo.__dict__:
     _M_Demo.PremiumAccountPrx = Ice.createTempClass()
-    class PremiumAccountPrx(Ice.ObjectPrx):
+    class PremiumAccountPrx(_M_Demo.AccountPrx):
 
         def getLoan(self, currency, value, periodLength, context=None):
             return _M_Demo.PremiumAccount._op_getLoan.invoke(self, ((currency, value, periodLength), context))
@@ -234,10 +250,10 @@ if 'PremiumAccountPrx' not in _M_Demo.__dict__:
     del PremiumAccountPrx
 
     _M_Demo.PremiumAccount = Ice.createTempClass()
-    class PremiumAccount(Ice.Object):
+    class PremiumAccount(_M_Demo.Account):
 
         def ice_ids(self, current=None):
-            return ('::Demo::PremiumAccount', '::Ice::Object')
+            return ('::Demo::Account', '::Demo::PremiumAccount', '::Ice::Object')
 
         def ice_id(self, current=None):
             return '::Demo::PremiumAccount'
@@ -254,10 +270,10 @@ if 'PremiumAccountPrx' not in _M_Demo.__dict__:
 
         __repr__ = __str__
 
-    _M_Demo._t_PremiumAccountDisp = IcePy.defineClass('::Demo::PremiumAccount', PremiumAccount, (), None, ())
+    _M_Demo._t_PremiumAccountDisp = IcePy.defineClass('::Demo::PremiumAccount', PremiumAccount, (), None, (_M_Demo._t_AccountDisp,))
     PremiumAccount._ice_type = _M_Demo._t_PremiumAccountDisp
 
-    PremiumAccount._op_getLoan = IcePy.Operation('getLoan', Ice.OperationMode.Normal, Ice.OperationMode.Normal, False, None, (), (((), _M_Demo._t_Currency, False, 0), ((), IcePy._t_int, False, 0), ((), IcePy._t_int, False, 0)), (), None, ())
+    PremiumAccount._op_getLoan = IcePy.Operation('getLoan', Ice.OperationMode.Normal, Ice.OperationMode.Normal, False, None, (), (((), _M_Demo._t_Currency, False, 0), ((), IcePy._t_int, False, 0), ((), IcePy._t_int, False, 0)), (), ((), IcePy._t_double, False, 0), ())
 
     _M_Demo.PremiumAccount = PremiumAccount
     del PremiumAccount
@@ -265,9 +281,9 @@ if 'PremiumAccountPrx' not in _M_Demo.__dict__:
 if 'CreatedAccount' not in _M_Demo.__dict__:
     _M_Demo.CreatedAccount = Ice.createTempClass()
     class CreatedAccount(object):
-        def __init__(self, account=None, pesel='', isPremium=False):
+        def __init__(self, account=None, key='', isPremium=False):
             self.account = account
-            self.pesel = pesel
+            self.key = key
             self.isPremium = isPremium
 
         def __eq__(self, other):
@@ -278,7 +294,7 @@ if 'CreatedAccount' not in _M_Demo.__dict__:
             else:
                 if self.account != other.account:
                     return False
-                if self.pesel != other.pesel:
+                if self.key != other.key:
                     return False
                 if self.isPremium != other.isPremium:
                     return False
@@ -294,7 +310,7 @@ if 'CreatedAccount' not in _M_Demo.__dict__:
 
     _M_Demo._t_CreatedAccount = IcePy.defineStruct('::Demo::CreatedAccount', CreatedAccount, (), (
         ('account', (), _M_Demo._t_AccountPrx),
-        ('pesel', (), IcePy._t_string),
+        ('key', (), IcePy._t_string),
         ('isPremium', (), IcePy._t_bool)
     ))
 

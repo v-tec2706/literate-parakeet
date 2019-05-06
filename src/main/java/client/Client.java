@@ -12,7 +12,7 @@ public class Client
             {
                 throw new Error("Invalid proxy");
             }
-            printer.getAccountStatus("Hello World!");
+            printer.getAccountStatus();
         }
     }
 }

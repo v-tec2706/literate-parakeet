@@ -5,17 +5,16 @@ import com.zeroc.Ice.Communicator;
 import com.zeroc.Ice.Identity;
 import com.zeroc.Ice.ObjectAdapter;
 import com.zeroc.Ice.Util;
-import stock.currency;
 
 import java.util.HashMap;
 import java.util.Map;
 
 public class Server {
-    StockExchangeThread stockExchangeThreadThread;
+    StockExchange stockExchangeThread;
     public void start(String[] args) {
 
-        this.stockExchangeThreadThread = new StockExchangeThread();
-        this.stockExchangeThreadThread.start();
+        this.stockExchangeThread = new StockExchange();
+        this.stockExchangeThread.start();
 
         int status = 0;
         Communicator communicator = null;
@@ -29,19 +28,8 @@ public class Server {
             ObjectAdapter adapter = communicator.createObjectAdapterWithEndpoints("Adapter1",
                     "tcp -h localhost -p 10001:udp -h localhost -p 10001");
 
-//            // 3. Stworzenie serwanta/serwantów
-//            AccountI accountServant = new AccountI("somepesel", "w",
-//                    new MoneyAmount(3, Currency.PLN));
-
             AccountsCreator factory = new AccountsCreator();
             adapter.add(factory, new Identity("accountfactory", "accfac"));
-
-
-  //          locator.createAccount("jan", "kowalski", "somepesel", new MoneyAmount(3000,
-  //                  Currency.PLN));
-            // 4. Dodanie wpisów do tablicy ASM
-//            adapter.add(accountServant, new Identity("somepesel", "standard"));
-
 
             // 5. Aktywacja adaptera i przejcie w pętlę przetwarzania żšdań
             adapter.activate();
@@ -67,20 +55,19 @@ public class Server {
         System.exit(status);
     }
 
-    public class StockExchangeThread  extends Thread {
+    public static class StockExchange extends Thread {
 
         public CurrencyService stockService;
-        public Map<Currency, Double> availableCurrencies = new HashMap<Currency, Double>(5);
+        public static Map<Currency, Double> availableCurrencies = new HashMap<Currency, Double>(5);
 
 
-        public StockExchangeThread() {
+        public StockExchange() {
             stockService = new CurrencyService("localhost", 50051);
         }
 
-        public void setAvailableCurrencies() {
-            this.availableCurrencies.put(Currency.PLN,0.0);
-            this.availableCurrencies.put(Currency.EUR,0.0);
-            this.availableCurrencies.put(Currency.USD,0.0);
+        public static void setAvailableCurrencies() {
+            availableCurrencies.put(Currency.EUR,0.0);
+            availableCurrencies.put(Currency.USD,0.0);
         }
 
         public void run() {
@@ -88,7 +75,7 @@ public class Server {
             setAvailableCurrencies();
             while(true) {
                 synchronized(availableCurrencies) {
-                    for(Map.Entry<Currency, Double> entry: availableCurrencies.entrySet()) {
+                    for(Map.Entry<Currency, Double> entry: availableCurrencies.entrySet()){
                         int c = entry.getKey().value() + 1;
                         Double val = entry.getValue();
                         stock.currencyData data = stock.currencyData.newBuilder().setCurr(stock.currency.valueOf(c)).setValue(val).build();

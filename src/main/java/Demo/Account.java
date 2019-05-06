@@ -17,7 +17,9 @@ package Demo;
 
 public interface Account extends com.zeroc.Ice.Object
 {
-    Money getAccountStatus(String s, com.zeroc.Ice.Current current);
+    Money getAccountStatus(com.zeroc.Ice.Current current);
+
+    boolean isPremium(com.zeroc.Ice.Current current);
 
     /** @hidden */
     static final String[] _iceIds =
@@ -53,13 +55,28 @@ public interface Account extends com.zeroc.Ice.Object
     static java.util.concurrent.CompletionStage<com.zeroc.Ice.OutputStream> _iceD_getAccountStatus(Account obj, final com.zeroc.IceInternal.Incoming inS, com.zeroc.Ice.Current current)
     {
         com.zeroc.Ice.Object._iceCheckMode(com.zeroc.Ice.OperationMode.Idempotent, current.mode);
-        com.zeroc.Ice.InputStream istr = inS.startReadParams();
-        String iceP_s;
-        iceP_s = istr.readString();
-        inS.endReadParams();
-        Money ret = obj.getAccountStatus(iceP_s, current);
+        inS.readEmptyParams();
+        Money ret = obj.getAccountStatus(current);
         com.zeroc.Ice.OutputStream ostr = inS.startWriteParams();
         Money.ice_write(ostr, ret);
+        inS.endWriteParams(ostr);
+        return inS.setResult(ostr);
+    }
+
+    /**
+     * @hidden
+     * @param obj -
+     * @param inS -
+     * @param current -
+     * @return -
+    **/
+    static java.util.concurrent.CompletionStage<com.zeroc.Ice.OutputStream> _iceD_isPremium(Account obj, final com.zeroc.IceInternal.Incoming inS, com.zeroc.Ice.Current current)
+    {
+        com.zeroc.Ice.Object._iceCheckMode(null, current.mode);
+        inS.readEmptyParams();
+        boolean ret = obj.isPremium(current);
+        com.zeroc.Ice.OutputStream ostr = inS.startWriteParams();
+        ostr.writeBool(ret);
         inS.endWriteParams(ostr);
         return inS.setResult(ostr);
     }
@@ -71,7 +88,8 @@ public interface Account extends com.zeroc.Ice.Object
         "ice_id",
         "ice_ids",
         "ice_isA",
-        "ice_ping"
+        "ice_ping",
+        "isPremium"
     };
 
     /** @hidden */
@@ -106,6 +124,10 @@ public interface Account extends com.zeroc.Ice.Object
             case 4:
             {
                 return com.zeroc.Ice.Object._iceD_ice_ping(this, in, current);
+            }
+            case 5:
+            {
+                return _iceD_isPremium(this, in, current);
             }
         }
 

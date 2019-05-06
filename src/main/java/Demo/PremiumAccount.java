@@ -15,13 +15,14 @@
 
 package Demo;
 
-public interface PremiumAccount extends com.zeroc.Ice.Object
+public interface PremiumAccount extends Account
 {
-    void getLoan(Currency currency, int value, int periodLength, com.zeroc.Ice.Current current);
+    double getLoan(Currency currency, int value, int periodLength, com.zeroc.Ice.Current current);
 
     /** @hidden */
     static final String[] _iceIds =
     {
+        "::Demo::Account",
         "::Demo::PremiumAccount",
         "::Ice::Object"
     };
@@ -61,18 +62,23 @@ public interface PremiumAccount extends com.zeroc.Ice.Object
         iceP_value = istr.readInt();
         iceP_periodLength = istr.readInt();
         inS.endReadParams();
-        obj.getLoan(iceP_currency, iceP_value, iceP_periodLength, current);
-        return inS.setResult(inS.writeEmptyParams());
+        double ret = obj.getLoan(iceP_currency, iceP_value, iceP_periodLength, current);
+        com.zeroc.Ice.OutputStream ostr = inS.startWriteParams();
+        ostr.writeDouble(ret);
+        inS.endWriteParams(ostr);
+        return inS.setResult(ostr);
     }
 
     /** @hidden */
     final static String[] _iceOps =
     {
+        "getAccountStatus",
         "getLoan",
         "ice_id",
         "ice_ids",
         "ice_isA",
-        "ice_ping"
+        "ice_ping",
+        "isPremium"
     };
 
     /** @hidden */
@@ -90,23 +96,31 @@ public interface PremiumAccount extends com.zeroc.Ice.Object
         {
             case 0:
             {
-                return _iceD_getLoan(this, in, current);
+                return Account._iceD_getAccountStatus(this, in, current);
             }
             case 1:
             {
-                return com.zeroc.Ice.Object._iceD_ice_id(this, in, current);
+                return _iceD_getLoan(this, in, current);
             }
             case 2:
             {
-                return com.zeroc.Ice.Object._iceD_ice_ids(this, in, current);
+                return com.zeroc.Ice.Object._iceD_ice_id(this, in, current);
             }
             case 3:
             {
-                return com.zeroc.Ice.Object._iceD_ice_isA(this, in, current);
+                return com.zeroc.Ice.Object._iceD_ice_ids(this, in, current);
             }
             case 4:
             {
+                return com.zeroc.Ice.Object._iceD_ice_isA(this, in, current);
+            }
+            case 5:
+            {
                 return com.zeroc.Ice.Object._iceD_ice_ping(this, in, current);
+            }
+            case 6:
+            {
+                return Account._iceD_isPremium(this, in, current);
             }
         }
 

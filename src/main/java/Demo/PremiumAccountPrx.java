@@ -15,24 +15,24 @@
 
 package Demo;
 
-public interface PremiumAccountPrx extends com.zeroc.Ice.ObjectPrx
+public interface PremiumAccountPrx extends AccountPrx
 {
-    default void getLoan(Currency currency, int value, int periodLength)
+    default double getLoan(Currency currency, int value, int periodLength)
     {
-        getLoan(currency, value, periodLength, com.zeroc.Ice.ObjectPrx.noExplicitContext);
+        return getLoan(currency, value, periodLength, com.zeroc.Ice.ObjectPrx.noExplicitContext);
     }
 
-    default void getLoan(Currency currency, int value, int periodLength, java.util.Map<String, String> context)
+    default double getLoan(Currency currency, int value, int periodLength, java.util.Map<String, String> context)
     {
-        _iceI_getLoanAsync(currency, value, periodLength, context, true).waitForResponse();
+        return _iceI_getLoanAsync(currency, value, periodLength, context, true).waitForResponse();
     }
 
-    default java.util.concurrent.CompletableFuture<Void> getLoanAsync(Currency currency, int value, int periodLength)
+    default java.util.concurrent.CompletableFuture<java.lang.Double> getLoanAsync(Currency currency, int value, int periodLength)
     {
         return _iceI_getLoanAsync(currency, value, periodLength, com.zeroc.Ice.ObjectPrx.noExplicitContext, false);
     }
 
-    default java.util.concurrent.CompletableFuture<Void> getLoanAsync(Currency currency, int value, int periodLength, java.util.Map<String, String> context)
+    default java.util.concurrent.CompletableFuture<java.lang.Double> getLoanAsync(Currency currency, int value, int periodLength, java.util.Map<String, String> context)
     {
         return _iceI_getLoanAsync(currency, value, periodLength, context, false);
     }
@@ -46,14 +46,18 @@ public interface PremiumAccountPrx extends com.zeroc.Ice.ObjectPrx
      * @param sync -
      * @return -
      **/
-    default com.zeroc.IceInternal.OutgoingAsync<Void> _iceI_getLoanAsync(Currency iceP_currency, int iceP_value, int iceP_periodLength, java.util.Map<String, String> context, boolean sync)
+    default com.zeroc.IceInternal.OutgoingAsync<java.lang.Double> _iceI_getLoanAsync(Currency iceP_currency, int iceP_value, int iceP_periodLength, java.util.Map<String, String> context, boolean sync)
     {
-        com.zeroc.IceInternal.OutgoingAsync<Void> f = new com.zeroc.IceInternal.OutgoingAsync<>(this, "getLoan", null, sync, null);
-        f.invoke(false, context, null, ostr -> {
+        com.zeroc.IceInternal.OutgoingAsync<java.lang.Double> f = new com.zeroc.IceInternal.OutgoingAsync<>(this, "getLoan", null, sync, null);
+        f.invoke(true, context, null, ostr -> {
                      Currency.ice_write(ostr, iceP_currency);
                      ostr.writeInt(iceP_value);
                      ostr.writeInt(iceP_periodLength);
-                 }, null);
+                 }, istr -> {
+                     double ret;
+                     ret = istr.readDouble();
+                     return ret;
+                 });
         return f;
     }
 

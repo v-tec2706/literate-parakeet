@@ -20,19 +20,19 @@ public class CreatedAccount implements java.lang.Cloneable,
 {
     public AccountPrx account;
 
-    public String pesel;
+    public String key;
 
     public boolean isPremium;
 
     public CreatedAccount()
     {
-        this.pesel = "";
+        this.key = "";
     }
 
-    public CreatedAccount(AccountPrx account, String pesel, boolean isPremium)
+    public CreatedAccount(AccountPrx account, String key, boolean isPremium)
     {
         this.account = account;
-        this.pesel = pesel;
+        this.key = key;
         this.isPremium = isPremium;
     }
 
@@ -57,9 +57,9 @@ public class CreatedAccount implements java.lang.Cloneable,
                     return false;
                 }
             }
-            if(this.pesel != r.pesel)
+            if(this.key != r.key)
             {
-                if(this.pesel == null || r.pesel == null || !this.pesel.equals(r.pesel))
+                if(this.key == null || r.key == null || !this.key.equals(r.key))
                 {
                     return false;
                 }
@@ -80,7 +80,7 @@ public class CreatedAccount implements java.lang.Cloneable,
         int h_ = 5381;
         h_ = com.zeroc.IceInternal.HashUtil.hashAdd(h_, "::Demo::CreatedAccount");
         h_ = com.zeroc.IceInternal.HashUtil.hashAdd(h_, account);
-        h_ = com.zeroc.IceInternal.HashUtil.hashAdd(h_, pesel);
+        h_ = com.zeroc.IceInternal.HashUtil.hashAdd(h_, key);
         h_ = com.zeroc.IceInternal.HashUtil.hashAdd(h_, isPremium);
         return h_;
     }
@@ -102,14 +102,14 @@ public class CreatedAccount implements java.lang.Cloneable,
     public void ice_writeMembers(com.zeroc.Ice.OutputStream ostr)
     {
         ostr.writeProxy(this.account);
-        ostr.writeString(this.pesel);
+        ostr.writeString(this.key);
         ostr.writeBool(this.isPremium);
     }
 
     public void ice_readMembers(com.zeroc.Ice.InputStream istr)
     {
         this.account = AccountPrx.uncheckedCast(istr.readProxy());
-        this.pesel = istr.readString();
+        this.key = istr.readString();
         this.isPremium = istr.readBool();
     }
 
@@ -166,5 +166,5 @@ public class CreatedAccount implements java.lang.Cloneable,
     private static final CreatedAccount _nullMarshalValue = new CreatedAccount();
 
     /** @hidden */
-    public static final long serialVersionUID = -8830811975625058687L;
+    public static final long serialVersionUID = -7908212478761703303L;
 }
